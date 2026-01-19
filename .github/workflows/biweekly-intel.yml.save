@@ -1,3 +1,5 @@
+
+
 name: Bi-Weekly Multilingual Shopping Intelligence
 
 on:
@@ -27,7 +29,7 @@ jobs:
       env:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       run: |
-        python main.py --scheduled
+        python main_improved.py --scheduled
     
     - name: Upload intelligence brief artifacts
       if: success()
