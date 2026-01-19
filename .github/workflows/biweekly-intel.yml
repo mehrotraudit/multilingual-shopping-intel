@@ -2,7 +2,7 @@ name: Bi-Weekly Multilingual Shopping Intelligence
 
 on:
   schedule:
-    # Runs at 9 AM UTC every Tuesday
+    # Runs at 9 AM UTC every Tuesday (1 AM PST / 4 AM EST)
     - cron: '0 9 * * 2'
   workflow_dispatch:  # Allow manual triggering
 
@@ -39,3 +39,39 @@ jobs:
           intelligence_briefs/*.html
           market_data/*.json
         retention-days: 90
+    
+    - name: Send Email with Intelligence Brief
+      if: success()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        secure: true
+        username: ${{ secrets.EMAIL_USERNAME }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: "🔥 Multilingual Shopping Intelligence Brief - ${{ github.run_number }}"
+        to: mehrotraudit@gmail.com
+        from: Multilingual Intel System <mehrotraudit@gmail.com>
+        html_body: |
+          <h2>📊 Bi-Weekly Intelligence Brief Generated</h2>
+          
+          <p><strong>Date:</strong> ${{ github.event.repository.updated_at }}</p>
+          <p><strong>Run:</strong> #${{ github.run_number }}</p>
+          
+          <h3>✅ Analysis Complete</h3>
+          <ul>
+            <li>Market signals analyzed</li>
+            <li>Opportunities identified by Claude AI</li>
+            <li>Intelligence brief generated</li>
+          </ul>
+          
+          <h3>📥 Access Your Brief</h3>
+          <p>Download the full intelligence brief from GitHub Actions:</p>
+          <p><a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">View Run & Download Artifacts</a></p>
+          
+          <p>The HTML brief is attached to this email for quick viewing.</p>
+          
+          <hr>
+          <p><small>Automated by Multilingual Shopping Experience Opportunity Discovery System</small></p>
+        attachments: intelligence_briefs/*.html
+        priority: high
