@@ -1,0 +1,55 @@
+name: Bi-Weekly Multilingual Shopping Intelligence
+
+on:
+  schedule:
+    # Runs at 9 AM UTC every Tuesday (bi-weekly filtering in code)
+    - cron: '0 9 * * 2'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  generate-intelligence-brief:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install anthropic requests feedparser
+    
+    - name: Run opportunity discovery system
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      run: |
+        python main.py --scheduled
+    
+    - name: Upload intelligence brief
+      uses: actions/upload-artifact@v3
+      with:
+        name: intelligence-brief
+        path: |
+          intelligence_briefs/*.txt
+          intelligence_briefs/*.html
+    
+    - name: Send email notification (optional)
+      if: success()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.EMAIL_USERNAME }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: "Multilingual Shopping Intelligence Brief - ${{ github.run_id }}"
+        to: product-team@example.com
+        from: intelligence-system@example.com
+        body: |
+          New bi-weekly intelligence brief generated.
+          
+          See attached artifacts in GitHub Actions.
+        attachments: intelligence_briefs/*.html
