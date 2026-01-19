@@ -10,6 +10,10 @@ jobs:
   generate-intelligence-brief:
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: write
+      issues: write
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -39,33 +43,3 @@ jobs:
           intelligence_briefs/*.html
           market_data/*.json
         retention-days: 90
-    
-    - name: Create Issue with Summary
-      if: success()
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          
-          // Read the latest brief
-          const files = fs.readdirSync('intelligence_briefs/');
-          const txtFile = files.filter(f => f.endsWith('.txt'))[0];
-          const briefContent = fs.readFileSync(`intelligence_briefs/${txtFile}`, 'utf8');
-          
-          // Extract top 3 opportunities
-          const lines = briefContent.split('\n');
-          let summary = '## 📊 Bi-Weekly Intelligence Brief Generated\n\n';
-          summary += `**Date:** ${new Date().toLocaleDateString()}\n`;
-          summary += `**Run:** #${context.runNumber}\n\n`;
-          summary += '### Top Opportunities\n';
-          summary += briefContent.substring(0, 2000) + '...\n\n';
-          summary += `[View Full Brief](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
-          
-          // Create issue
-          await github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: `Intelligence Brief - ${new Date().toLocaleDateString()}`,
-            body: summary,
-            labels: ['intelligence-brief', 'automated']
-          });
